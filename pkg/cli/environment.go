@@ -60,6 +60,8 @@ type EnvSettings struct {
 	Debug bool
 	// RegistryConfig is the path to the registry config file.
 	RegistryConfig string
+	// RegistryInsecure indicates whether or not registry insecure skip verify
+	RegistryInsecure bool
 	// RepositoryConfig is the path to the repositories file.
 	RepositoryConfig string
 	// RepositoryCache is the path to the repository cache directory.
@@ -86,7 +88,7 @@ func New() *EnvSettings {
 		RepositoryCache:  envOr("HELM_REPOSITORY_CACHE", helmpath.CachePath("repository")),
 	}
 	env.Debug, _ = strconv.ParseBool(os.Getenv("HELM_DEBUG"))
-
+	env.RegistryInsecure, _ = strconv.ParseBool(os.Getenv("HELM_REGISTRY_INSECURE"))
 	// bind to kubernetes config flags
 	env.config = &genericclioptions.ConfigFlags{
 		Namespace:        &env.namespace,
@@ -115,6 +117,7 @@ func (s *EnvSettings) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.RegistryConfig, "registry-config", s.RegistryConfig, "path to the registry config file")
 	fs.StringVar(&s.RepositoryConfig, "repository-config", s.RepositoryConfig, "path to the file containing repository names and URLs")
 	fs.StringVar(&s.RepositoryCache, "repository-cache", s.RepositoryCache, "path to the file containing cached repository indexes")
+	fs.BoolVar(&s.RegistryInsecure, "registry-insecure", s.RegistryInsecure, "registry insecure skip verify")
 }
 
 func envOr(name, def string) string {
@@ -153,6 +156,7 @@ func (s *EnvSettings) EnvVars() map[string]string {
 		"HELM_DEBUG":             fmt.Sprint(s.Debug),
 		"HELM_PLUGINS":           s.PluginsDirectory,
 		"HELM_REGISTRY_CONFIG":   s.RegistryConfig,
+		"HELM_REGISTRY_INSECURE": fmt.Sprint(s.RegistryInsecure),
 		"HELM_REPOSITORY_CACHE":  s.RepositoryCache,
 		"HELM_REPOSITORY_CONFIG": s.RepositoryConfig,
 		"HELM_NAMESPACE":         s.Namespace(),
