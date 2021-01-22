@@ -153,10 +153,15 @@ func newRootCmd(actionConfig *action.Configuration, out io.Writer, args []string
 	flags.ParseErrorsWhitelist.UnknownFlags = true
 	flags.Parse(args)
 
+	var resolver *registry.Resolver
+	if settings.RegistryInsecure {
+		resolver = registry.NewInsecureResolver()
+	}
 	registryClient, err := registry.NewClient(
 		registry.ClientOptDebug(settings.Debug),
 		registry.ClientOptWriter(out),
 		registry.ClientOptCredentialsFile(settings.RegistryConfig),
+		registry.ClientOptResolver(resolver),
 	)
 	if err != nil {
 		return nil, err

@@ -17,7 +17,11 @@ limitations under the License.
 package registry // import "helm.sh/helm/v3/internal/experimental/registry"
 
 import (
+	"crypto/tls"
+	"net/http"
+
 	"github.com/containerd/containerd/remotes"
+	"github.com/containerd/containerd/remotes/docker"
 )
 
 type (
@@ -26,3 +30,18 @@ type (
 		remotes.Resolver
 	}
 )
+
+func NewInsecureResolver() *Resolver {
+	return &Resolver{
+		Resolver: docker.NewResolver(docker.ResolverOptions{
+			PlainHTTP: false,
+			Client: &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: false,
+					},
+				},
+			},
+		}),
+	}
+}
